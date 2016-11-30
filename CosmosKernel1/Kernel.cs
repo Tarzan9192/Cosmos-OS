@@ -7,394 +7,400 @@ namespace CosmosKernel1
 {
     public class Kernel : Sys.Kernel
     {
-        private CosmosFileSystem fs;
+        public static CosmosFileSystem fs;
         public static VariableStorage vs;
+        public Commands commandParser;
         protected override void BeforeRun()
         {
             //Console.WriteLine("Cosmos booted successfully. Type a line of text to get it echoed back.");
             Console.WriteLine("Cosmos booted succefully.");
             fs = new CosmosFileSystem();
             vs = new VariableStorage();
-        }        
-        
+            commandParser = new Commands();
+        }
+
 
         protected override void Run()
-        {                             
+        {
 
             //I'm going for a Unix shell feel.
             Console.WriteLine();
             Console.Write("$ ");
             string input = Console.ReadLine();
 
+            commandParser.ParseInput(input);
+
+
             //To buffer user commands
-            Queue inputQueue = new Queue(input);
-            
-            while(inputQueue.getSize() > 0)
-            {
-                //Grab the first word in the queue.
-                string command = inputQueue.poll();                
-                switch (command)
-                {
-                    case "echo":
-                        String token = inputQueue.poll();                        
-                        Variable var = vs.getVariable(token);
-                        if(var != null)
-                        {
-                            if(inputQueue.getSize() == 0)
-                            {
-                                Console.WriteLine(var.getValue());
-                            }
-                            else
-                            {
-                                Console.WriteLine(token + inputQueue.ToString());
-                            }                          
-                        }
-                        else
-                        {
-                            Console.WriteLine(token + inputQueue.ToString());
-                        }                        
-                        inputQueue.clear();                                              
-                        break;
+            //Queue inputQueue = new Queue(input);
 
-                    case "dir":
-                        fs.GetCurrentDir().ListContents();
-                        break;
-                    case "cd":
-                        if (inputQueue.getSize() == 1)
-                        {
-                            String directory = inputQueue.poll();
-                            Console.WriteLine(directory);
-                           fs.ChangeDirectory(directory);
-                        }
-                        break;                       
-                    case "create":
-                        if(inputQueue.getSize() > 0)
-                        {
-                            String fileName = inputQueue.poll();   
-                                
-                            //To hold lines entered by user.                    
-                            List<String> contents = new List<String>();
-                            String consoleInput = "";
+            //while (inputQueue.getSize() > 0)
+            //{
+            //    //Grab the first word in the queue.
+            //    string command = inputQueue.poll();
+            //    switch (command)
+            //    {
+            //        //case "echo":
+            //        //    String token = inputQueue.poll();                        
+            //        //    Variable var = vs.getVariable(token);
+            //        //    if(var != null)
+            //        //    {
+            //        //        if(inputQueue.getSize() == 0)
+            //        //        {
+            //        //            Console.WriteLine(var.getValue());
+            //        //        }
+            //        //        else
+            //        //        {
+            //        //            Console.WriteLine(token + inputQueue.ToString());
+            //        //        }                          
+            //        //    }
+            //        //    else
+            //        //    {
+            //        //        Console.WriteLine(token + inputQueue.ToString());
+            //        //    }                        
+            //        //    inputQueue.clear();                                              
+            //        //    break;
 
-                            Console.Write("Enter Text: ");
-                            Console.WriteLine("(Enter \"\\save\" to finish)");
-                            consoleInput = Console.ReadLine();
-                            while(consoleInput != "\\save")
-                            {
-                                contents.Add(consoleInput);
-                                consoleInput = Console.ReadLine();
-                            }
-                            File newFile = new File(fileName, contents.ToArray());
-                            fs.GetCurrentDir().AddFile(newFile);
-                        }
-                        break;
-                    case "run":
-                        if(inputQueue.getSize() == 2)
-                        {
-                            int times = 0;
-                            String file = "";
-                            try
-                            {
-                                times = Int32.Parse(inputQueue.poll());
-                                file = inputQueue.poll();
-                                fs.GetCurrentDir().GetFile(file);
+            //        //case "dir":
+            //        //    fs.GetCurrentDir().ListContents();
+            //        //    break;
+            //        //case "cd":
+            //        //    if (inputQueue.getSize() == 1)
+            //        //    {
+            //        //        String directory = inputQueue.poll();
+            //        //        Console.WriteLine(directory);
+            //        //       fs.ChangeDirectory(directory);
+            //        //    }
+            //        //    break;                       
+            //        //case "create":
+            //        //    if(inputQueue.getSize() > 0)
+            //        //    {
+            //        //        String fileName = inputQueue.poll();   
 
-                            }
-                            catch (Exception e)
-                            {
-                                Console.WriteLine("Please enter: run <number> <file>");
-                                break;
-                            }
-                        }
-                        break;
-                    case "set":
-                        if (inputQueue.getSize() == 3)
-                        {
-                            String variable = inputQueue.poll();
+            //        //        //To hold lines entered by user.                    
+            //        //        List<String> contents = new List<String>();
+            //        //        String consoleInput = "";
 
-                            //get rid of '=' sign.
-                            String assignmentOp = inputQueue.poll();
-                            //if(assignmentOp != "=")
-                            //{                                
-                            //    break;
-                            //}
+            //        //        Console.Write("Enter Text: ");
+            //        //        Console.WriteLine("(Enter \"\\save\" to finish)");
+            //        //        consoleInput = Console.ReadLine();
+            //        //        while(consoleInput != "\\save")
+            //        //        {
+            //        //            contents.Add(consoleInput);
+            //        //            consoleInput = Console.ReadLine();
+            //        //        }
+            //        //        File newFile = new File(fileName, contents.ToArray());
+            //        //        fs.GetCurrentDir().AddFile(newFile);
+            //        //    }
+            //        //    break;
+            //        //case "run":
+            //        //    if(inputQueue.getSize() == 2)
+            //        //    {
+            //        //        int times = 0;
+            //        //        String file = "";
+            //        //        try
+            //        //        {
+            //        //            times = Int32.Parse(inputQueue.poll());
+            //        //            file = inputQueue.poll();
+            //        //            fs.GetCurrentDir().GetFile(file);
 
-                            //Get assignment value.
-                            String value = inputQueue.poll();
-                            //Console.WriteLine(value);
-                            Variable newVar;
+            //        //        }
+            //        //        catch (Exception e)
+            //        //        {
+            //        //            Console.WriteLine("Please enter: run <number> <file>");
+            //        //            break;
+            //        //        }
+            //        //    }
+            //        //    break;
+            //        //case "set":
+            //        //    if (inputQueue.getSize() == 3)
+            //        //    {
+            //        //        String variable = inputQueue.poll();
 
-                            try
-                            {
-                                Boolean negative = false;
-                                char[] number = value.ToCharArray();
-                                if (number[0] == '-')
-                                {
-                                    negative = true;
-                                    value = value.Substring(1);
-                                }
-                                int val = Int32.Parse(value);
-                                if (negative == true)
-                                {
-                                    val = 0 - val;
-                                }                                
-                                newVar = new Variable(variable, val);
-                                vs.Add(newVar);
-                            }
-                            catch (Exception e)
-                            {
-                                Console.WriteLine(e.Message);
-                                try
-                                {
-                                    //Check if user is attempting to assingn new variable
-                                    //to a pre-existing variable.
-                                    Variable temp = vs.getVariable(value);
-                                    if (temp != null)
-                                    {
-                                        newVar = new Variable(variable, temp.getValue());
-                                        vs.Add(newVar);
-                                    }
-                                }
-                                catch (Exception ea)
-                                {
-                                    Console.WriteLine(ea.Message);
-                                    Console.WriteLine("ERROR: " + value + " is not a known variable!");
-                                }
-                            }
-                        }
-                        break;
-                    case "add":
-                        if(inputQueue.getSize() == 3)
-                        {
-                            String token1 = inputQueue.poll();
-                            String token2 = inputQueue.poll();
-                            String variableName = inputQueue.poll();
-                            int a = 0;
-                            int b = 0;
+            //        //        //get rid of '=' sign.
+            //        //        String assignmentOp = inputQueue.poll();
+            //        //        //if(assignmentOp != "=")
+            //        //        //{                                
+            //        //        //    break;
+            //        //        //}
 
-                            if (vs.Contains(token1))
-                            {
-                                a = vs.getVariable(token1).getValue();
-                            }
-                            else
-                            {
-                                //try to parse an int
-                                try
-                                {
-                                    a = Int32.Parse(token1);
-                                }   
-                                catch(Exception e)
-                                {
-                                    Console.WriteLine("Not a number");
-                                    break;
-                                }
-                            }
+            //        //        //Get assignment value.
+            //        //        String value = inputQueue.poll();
+            //        //        //Console.WriteLine(value);
+            //        //        Variable newVar;
 
-                            if (vs.Contains(token2))
-                            {
-                                b = vs.getVariable(token2).getValue();
-                            }
-                            else
-                            {
-                                //try to parse int
-                                try
-                                {
-                                    b = Int32.Parse(token2);
-                                } 
-                                catch(Exception ea)
-                                {
-                                    Console.WriteLine("Not a number");
-                                    break;
-                                }
-                            }
+            //        //        try
+            //        //        {
+            //        //            Boolean negative = false;
+            //        //            char[] number = value.ToCharArray();
+            //        //            if (number[0] == '-')
+            //        //            {
+            //        //                negative = true;
+            //        //                value = value.Substring(1);
+            //        //            }
+            //        //            int val = Int32.Parse(value);
+            //        //            if (negative == true)
+            //        //            {
+            //        //                val = 0 - val;
+            //        //            }                                
+            //        //            newVar = new Variable(variable, val);
+            //        //            vs.Add(newVar);
+            //        //        }
+            //        //        catch (Exception e)
+            //        //        {
+            //        //            Console.WriteLine(e.Message);
+            //        //            try
+            //        //            {
+            //        //                //Check if user is attempting to assingn new variable
+            //        //                //to a pre-existing variable.
+            //        //                Variable temp = vs.getVariable(value);
+            //        //                if (temp != null)
+            //        //                {
+            //        //                    newVar = new Variable(variable, temp.getValue());
+            //        //                    vs.Add(newVar);
+            //        //                }
+            //        //            }
+            //        //            catch (Exception ea)
+            //        //            {
+            //        //                Console.WriteLine(ea.Message);
+            //        //                Console.WriteLine("ERROR: " + value + " is not a known variable!");
+            //        //            }
+            //        //        }
+            //        //    }
+            //        //    break;
+            //        //case "add":
+            //        //    if(inputQueue.getSize() == 3)
+            //        //    {
+            //        //        String token1 = inputQueue.poll();
+            //        //        String token2 = inputQueue.poll();
+            //        //        String variableName = inputQueue.poll();
+            //        //        int a = 0;
+            //        //        int b = 0;
 
-                            int sum = a + b;
-                            Variable newVar = new Variable(variableName, sum);
-                            vs.Add(newVar);
-                        }                        
-                        break;
+            //        //        if (vs.Contains(token1))
+            //        //        {
+            //        //            a = vs.getVariable(token1).getValue();
+            //        //        }
+            //        //        else
+            //        //        {
+            //        //            //try to parse an int
+            //        //            try
+            //        //            {
+            //        //                a = Int32.Parse(token1);
+            //        //            }   
+            //        //            catch(Exception e)
+            //        //            {
+            //        //                Console.WriteLine("Not a number");
+            //        //                break;
+            //        //            }
+            //        //        }
 
-                    case "sub":
-                        if (inputQueue.getSize() == 3)
-                        {
-                            String token1 = inputQueue.poll();
-                            String token2 = inputQueue.poll();
-                            String variableName = inputQueue.poll();
-                            int a = 0;
-                            int b = 0;
+            //        //        if (vs.Contains(token2))
+            //        //        {
+            //        //            b = vs.getVariable(token2).getValue();
+            //        //        }
+            //        //        else
+            //        //        {
+            //        //            //try to parse int
+            //        //            try
+            //        //            {
+            //        //                b = Int32.Parse(token2);
+            //        //            } 
+            //        //            catch(Exception ea)
+            //        //            {
+            //        //                Console.WriteLine("Not a number");
+            //        //                break;
+            //        //            }
+            //        //        }
 
-                            if (vs.Contains(token1))
-                            {
-                                a = vs.getVariable(token1).getValue();
-                            }
-                            else
-                            {
-                                //try to parse an int
-                                try
-                                {
-                                    a = Int32.Parse(token1);
-                                }
-                                catch (Exception e)
-                                {
-                                    Console.WriteLine("Not a number");
-                                    break;
-                                }
-                            }
+            //        //        int sum = a + b;
+            //        //        Variable newVar = new Variable(variableName, sum);
+            //        //        vs.Add(newVar);
+            //        //    }                        
+            //        //    break;
 
-                            if (vs.Contains(token2))
-                            {
-                                b = vs.getVariable(token2).getValue();
-                            }
-                            else
-                            {
-                                //try to parse int
-                                try
-                                {
-                                    b = Int32.Parse(token2);
-                                }
-                                catch (Exception ea)
-                                {
-                                    Console.WriteLine("Not a number");
-                                    break;
-                                }
-                            }
+            //        //case "sub":
+            //        //    if (inputQueue.getSize() == 3)
+            //        //    {
+            //        //        String token1 = inputQueue.poll();
+            //        //        String token2 = inputQueue.poll();
+            //        //        String variableName = inputQueue.poll();
+            //        //        int a = 0;
+            //        //        int b = 0;
 
-                            int diff = a - b;
-                            Variable newVar = new Variable(variableName, diff);
-                            vs.Add(newVar);
-                        }
-                        break;
+            //        //        if (vs.Contains(token1))
+            //        //        {
+            //        //            a = vs.getVariable(token1).getValue();
+            //        //        }
+            //        //        else
+            //        //        {
+            //        //            //try to parse an int
+            //        //            try
+            //        //            {
+            //        //                a = Int32.Parse(token1);
+            //        //            }
+            //        //            catch (Exception e)
+            //        //            {
+            //        //                Console.WriteLine("Not a number");
+            //        //                break;
+            //        //            }
+            //        //        }
 
-                    case "mul":
-                        if (inputQueue.getSize() == 3)
-                        {
-                            String token1 = inputQueue.poll();
-                            String token2 = inputQueue.poll();
-                            String variableName = inputQueue.poll();
-                            int a = 0;
-                            int b = 0;
+            //        //        if (vs.Contains(token2))
+            //        //        {
+            //        //            b = vs.getVariable(token2).getValue();
+            //        //        }
+            //        //        else
+            //        //        {
+            //        //            //try to parse int
+            //        //            try
+            //        //            {
+            //        //                b = Int32.Parse(token2);
+            //        //            }
+            //        //            catch (Exception ea)
+            //        //            {
+            //        //                Console.WriteLine("Not a number");
+            //        //                break;
+            //        //            }
+            //        //        }
 
-                            if (vs.Contains(token1))
-                            {
-                                a = vs.getVariable(token1).getValue();
-                            }
-                            else
-                            {
-                                //try to parse an int
-                                try
-                                {
-                                    a = Int32.Parse(token1);
-                                }
-                                catch (Exception e)
-                                {
-                                    Console.WriteLine("Not a number");
-                                    break;
-                                }
-                            }
+            //        //        int diff = a - b;
+            //        //        Variable newVar = new Variable(variableName, diff);
+            //        //        vs.Add(newVar);
+            //        //    }
+            //        //    break;
 
-                            if (vs.Contains(token2))
-                            {
-                                b = vs.getVariable(token2).getValue();
-                            }
-                            else
-                            {
-                                //try to parse int
-                                try
-                                {
-                                    b = Int32.Parse(token2);
-                                }
-                                catch (Exception ea)
-                                {
-                                    Console.WriteLine("Not a number");
-                                    break;
-                                }
-                            }
+            //        //case "mul":
+            //        //    if (inputQueue.getSize() == 3)
+            //        //    {
+            //        //        String token1 = inputQueue.poll();
+            //        //        String token2 = inputQueue.poll();
+            //        //        String variableName = inputQueue.poll();
+            //        //        int a = 0;
+            //        //        int b = 0;
 
-                            int product = a * b;
-                            Variable newVar = new Variable(variableName, product);
-                            vs.Add(newVar);
-                        }
-                        break;
+            //        //        if (vs.Contains(token1))
+            //        //        {
+            //        //            a = vs.getVariable(token1).getValue();
+            //        //        }
+            //        //        else
+            //        //        {
+            //        //            //try to parse an int
+            //        //            try
+            //        //            {
+            //        //                a = Int32.Parse(token1);
+            //        //            }
+            //        //            catch (Exception e)
+            //        //            {
+            //        //                Console.WriteLine("Not a number");
+            //        //                break;
+            //        //            }
+            //        //        }
 
-                    case "div":
-                        if (inputQueue.getSize() == 3)
-                        {
-                            String token1 = inputQueue.poll();
-                            String token2 = inputQueue.poll();
-                            String variableName = inputQueue.poll();
-                            int a = 0;
-                            int b = 0;
+            //        //        if (vs.Contains(token2))
+            //        //        {
+            //        //            b = vs.getVariable(token2).getValue();
+            //        //        }
+            //        //        else
+            //        //        {
+            //        //            //try to parse int
+            //        //            try
+            //        //            {
+            //        //                b = Int32.Parse(token2);
+            //        //            }
+            //        //            catch (Exception ea)
+            //        //            {
+            //        //                Console.WriteLine("Not a number");
+            //        //                break;
+            //        //            }
+            //        //        }
 
-                            if (vs.Contains(token1))
-                            {
-                                a = vs.getVariable(token1).getValue();
-                            }
-                            else
-                            {
-                                //try to parse an int
-                                try
-                                {
-                                    a = Int32.Parse(token1);
-                                }
-                                catch (Exception e)
-                                {
-                                    Console.WriteLine("Not a number");
-                                    break;
-                                }
-                            }
+            //        //        int product = a * b;
+            //        //        Variable newVar = new Variable(variableName, product);
+            //        //        vs.Add(newVar);
+            //        //    }
+            //        //    break;
 
-                            if (vs.Contains(token2))
-                            {
-                                b = vs.getVariable(token2).getValue();
-                            }
-                            else
-                            {
-                                //try to parse int
-                                try
-                                {
-                                    b = Int32.Parse(token2);
-                                }
-                                catch (Exception ea)
-                                {
-                                    Console.WriteLine("Not a number");
-                                    break;
-                                }
-                            }
-                            
-                            int quotient = a / b;
-                            if(b > a)
-                            {
-                                Console.WriteLine("Currenty can't calculate correct decimal.");
-                                Console.WriteLine("(Check for yourself...)");
-                            }
-                            Variable newVar = new Variable(variableName, quotient);
-                            vs.Add(newVar);
-                        }
-                        break;
-                    case "print":
-                        if(inputQueue.getSize() > 0)
-                        {
-                            Variable v = vs.getVariable(inputQueue.poll());
-                            if(v != null)
-                            {
-                                Console.WriteLine(v.getValue());
-                            }
-                            else
-                            {
-                                Console.WriteLine("No such variable.");
-                            }                            
-                        }
-                        break;
-                    default:  
-                        if(command != "")
-                        {
-                            Console.WriteLine("Not a valid command.");
-                        }                        
-                        inputQueue.clear();
-                        break;
-                }
-            }
-                        
+            //        //case "div":
+            //        //    if (inputQueue.getSize() == 3)
+            //        //    {
+            //        //        String token1 = inputQueue.poll();
+            //        //        String token2 = inputQueue.poll();
+            //        //        String variableName = inputQueue.poll();
+            //        //        int a = 0;
+            //        //        int b = 0;
+
+            //        //        if (vs.Contains(token1))
+            //        //        {
+            //        //            a = vs.getVariable(token1).getValue();
+            //        //        }
+            //        //        else
+            //        //        {
+            //        //            //try to parse an int
+            //        //            try
+            //        //            {
+            //        //                a = Int32.Parse(token1);
+            //        //            }
+            //        //            catch (Exception e)
+            //        //            {
+            //        //                Console.WriteLine("Not a number");
+            //        //                break;
+            //        //            }
+            //        //        }
+
+            //        //        if (vs.Contains(token2))
+            //        //        {
+            //        //            b = vs.getVariable(token2).getValue();
+            //        //        }
+            //        //        else
+            //        //        {
+            //        //            //try to parse int
+            //        //            try
+            //        //            {
+            //        //                b = Int32.Parse(token2);
+            //        //            }
+            //        //            catch (Exception ea)
+            //        //            {
+            //        //                Console.WriteLine("Not a number");
+            //        //                break;
+            //        //            }
+            //        //        }
+
+            //        //        int quotient = a / b;
+            //        //        if(b > a)
+            //        //        {
+            //        //            Console.WriteLine("Currenty can't calculate correct decimal.");
+            //        //            Console.WriteLine("(Check for yourself...)");
+            //        //        }
+            //        //        Variable newVar = new Variable(variableName, quotient);
+            //        //        vs.Add(newVar);
+            //        //    }
+            //        //    break;
+            //        //case "print":
+            //        //    if(inputQueue.getSize() > 0)
+            //        //    {
+            //        //        Variable v = vs.getVariable(inputQueue.poll());
+            //        //        if(v != null)
+            //        //        {
+            //        //            Console.WriteLine(v.getValue());
+            //        //        }
+            //        //        else
+            //        //        {
+            //        //            Console.WriteLine("No such variable.");
+            //        //        }                            
+            //        //    }
+            //        //    break;
+            //        //    default:  
+            //        //        if(command != "")
+            //        //        {
+            //        //            Console.WriteLine("Not a valid command.");
+            //        //        }                        
+            //        //        inputQueue.clear();
+            //        //        break;
+            //        //}
+            //    }
+
+            //}
         }
     }
 

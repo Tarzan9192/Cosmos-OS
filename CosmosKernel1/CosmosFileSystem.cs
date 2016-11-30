@@ -111,7 +111,41 @@ namespace CosmosKernel1
         /// <param name="file"></param>
         public void AddFile(File file)
         {
-            fileList.Add(file);            
+            //Indicates file already exists
+            if(GetFile(file.fullName) != null)
+            {
+                Console.Write("File " + file.fullName + " already exists!");
+                Console.Write("Overwrite? y/n: ");
+                String input = Console.ReadLine().ToLower();
+                if(input == "y")
+                {
+                    DelFile(file);
+                    fileList.Add(file);
+                }
+            }
+            else
+            {
+                fileList.Add(file);
+            }
+                       
+        }
+
+        //public String[] ReadFile(String file)
+        //{
+        //    File f = GetFile(file);
+        //    return f.contents;
+        //}
+
+        public void DelFile(File file)
+        {
+            for(int i = 0; i < fileList.Count; i++)
+            {
+                if(fileList[i].fullName == file.fullName)
+                {
+                    fileList[i] = null;
+                    return;
+                }
+            }            
         }
 
         /// <summary>
@@ -126,7 +160,7 @@ namespace CosmosKernel1
 
             for(int i = 0; i < fileList.Count; i++)
             {
-                if(fileList[i].name == file)
+                if(fileList[i].fullName == file)
                 {
                     target = fileList[i];
                 }
@@ -191,9 +225,12 @@ namespace CosmosKernel1
                 Console.WriteLine(((Directory)children[i]).name);                
             }
             for(int i = 0; i < fileList.Count; i++)
-            {                             
-                Console.Write(fileList[i].fullName);
-                Console.WriteLine("\t\t" + fileList[i].getSize() + "Bytes");
+            {   
+                if(fileList[i] != null)
+                {
+                    Console.Write(fileList[i].fullName);
+                    Console.WriteLine("\t\t" + fileList[i].getSize() + "Bytes");
+                }                
             }
         }
 

@@ -13,7 +13,7 @@ namespace CosmosKernel1
     {
         public String fullName;
         public String name;
-        private String[] contents;
+        public String[] contents;
         public String ext;
         private String dateCreated;        
         
@@ -56,6 +56,6 @@ namespace CosmosKernel1
             }
 
             return size;
-        }
+        }        
     }
 }
