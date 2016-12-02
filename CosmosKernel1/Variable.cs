@@ -31,6 +31,11 @@ namespace CosmosKernel1
         {
             return this.name;
         }
-        
+
+        public override string ToString()
+        {
+            return "" + this.getValue();
+        }
+
     }
 }

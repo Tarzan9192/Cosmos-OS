@@ -17,8 +17,9 @@ namespace CosmosKernel1
 
         public CosmosFileSystem()
         {
-            root = new Directory("/home");
-            root.AddDir("/Documents");            
+            root = new Directory("/");
+            root.AddDir("/home");
+            root.GetDirectory("/home").AddDir("/Documents");
             currentDir = root;            
         }
 
@@ -46,7 +47,10 @@ namespace CosmosKernel1
             //Go up one directory
             if (destination == "..")
             {
-                currentDir = currentDir.GetParent();
+                if (currentDir.HasParent)
+                {
+                    currentDir = currentDir.GetParent();
+                }                
                 return;
             }
 
@@ -61,7 +65,17 @@ namespace CosmosKernel1
             }
         }
 
-
+        public String GetDirPath(Directory d)
+        {
+            if (!d.HasParent)
+            {
+                return d.GetName;
+            }
+            else
+            {
+                return GetDirPath(d.GetParent()) + d.GetName;
+            }
+        }
 
     }
 
@@ -136,6 +150,13 @@ namespace CosmosKernel1
         //    return f.contents;
         //}
 
+        /// <summary>
+        /// This method marks a index in the file array as null;
+        /// effectively deleting it. I should refactor this so it 
+        /// actually deletes the file object and resizes the file
+        /// array to save memory.
+        /// </summary>
+        /// <param name="file"></param>
         public void DelFile(File file)
         {
             for(int i = 0; i < fileList.Count; i++)
@@ -199,6 +220,18 @@ namespace CosmosKernel1
             return children;
         }
 
+        public void DelDir(String d)
+        {
+            for (int i = 0; i < children.Count; i++)
+            {
+                if (children[i].GetName == d)
+                {
+                    children[i] = null;
+                    return;
+                }
+            }
+        }
+
         //Returns the names of directories in String format.
         public List<String> GetDirNames()
         {
@@ -222,7 +255,10 @@ namespace CosmosKernel1
             Console.WriteLine("********\t\t*********");
             for(int i = 0; i < children.Count; i++)
             {
-                Console.WriteLine(((Directory)children[i]).name);                
+                if(children[i] != null)
+                {
+                    Console.WriteLine(((Directory)children[i]).name);
+                }                
             }
             for(int i = 0; i < fileList.Count; i++)
             {   
@@ -230,6 +266,51 @@ namespace CosmosKernel1
                 {
                     Console.Write(fileList[i].fullName);
                     Console.WriteLine("\t\t" + fileList[i].getSize() + "Bytes");
+                }                
+            }
+        }
+
+        public String GetName
+        {
+            get { return name; }
+        }
+
+        public void ChangeName(String newName)
+        {
+            this.name = newName;
+        }
+
+        public bool HasParent
+        {
+            get
+            {
+                if (parent != null)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }            
+        }
+
+        public String GetDirPath()
+        {
+            if (!this.HasParent)
+            {                
+                return this.name;
+            }
+            else
+            {
+                if(this.parent.GetName == "/")
+                {
+                    //This should get rid of extra '/' when the parent is root directory.
+                    return this.name;           
+                }
+                else
+                {
+                    return this.parent.GetDirPath() + this.name;
                 }                
             }
         }

@@ -23,6 +23,15 @@ namespace CosmosKernel1
                 case "dir":
                     Dir();
                     break;
+                case "mkdir":
+                    MkDir();
+                    break;
+                case "deldir":
+                    DelDir();
+                    break;
+                case "delfile":
+                    DelFile();
+                    break;
                 case "cd":
                     Cd();
                     break;
@@ -64,26 +73,93 @@ namespace CosmosKernel1
 
         }
 
-        private void Echo()
+        private void DelFile()
         {
-            String token = inputQueue.poll();
-            Variable var = Kernel.vs.getVariable(token);
-            if (var != null)
+            if(inputQueue.getSize() == 1)
             {
-                if (inputQueue.getSize() == 0)
+                String token = inputQueue.poll();
+                File f = Kernel.fs.GetCurrentDir().GetFile(token);
+                if (f != null)
                 {
-                    Console.WriteLine(var.getValue());
+                    Kernel.fs.GetCurrentDir().DelFile(f);
                 }
                 else
                 {
-                    Console.WriteLine(token + inputQueue.ToString());
+                    Console.WriteLine("File not found in " + Kernel.fs.GetCurrentDir().GetName);
                 }
             }
-            else
-            {
-                Console.WriteLine(token + inputQueue.ToString());
+        }
+
+        private void DelDir()
+        {
+            if(inputQueue.getSize() == 1)
+            {                
+                String token = inputQueue.poll();
+                Directory d = Kernel.fs.GetCurrentDir().GetDirectory(token);
+                if(d != null)
+                {
+                    d.GetParent().DelDir(token);
+                }
+                else
+                {
+                    Console.WriteLine("Directory not found in " + Kernel.fs.GetCurrentDir().GetName);
+                }
             }
-            inputQueue.clear();
+        }
+
+        /// <summary>
+        /// Creates a directory in the current directory the
+        /// user is in.
+        /// </summary>
+        private void MkDir()
+        {
+            if(inputQueue.getSize() == 1)
+            {
+                String token = inputQueue.poll();                
+                if(token.ToCharArray()[0] != '/')
+                {
+                    Kernel.fs.GetCurrentDir().AddDir("/" + token.Trim());
+                }
+                else
+                {
+                    Kernel.fs.GetCurrentDir().AddDir(token.Trim());
+                }                
+            }
+        }
+
+        private void Echo()
+        {            
+            while(inputQueue.getSize() > 0)
+            {
+                String token = inputQueue.poll();
+                Variable v = Kernel.vs.getVariable(token);
+                if(v != null)
+                {
+                    Console.Write(v + " ");
+                }
+                else
+                {
+                    Console.Write(token + " ");
+                }
+            }
+            Console.WriteLine();                    
+            //Variable var = Kernel.vs.getVariable(token);
+            //if (var != null)
+            //{
+            //    if (inputQueue.getSize() == 0)
+            //    {
+            //        Console.WriteLine(var.getValue());
+            //    }
+            //    else
+            //    {
+            //        Console.WriteLine(token + inputQueue.ToString());
+            //    }
+            //}
+            //else
+            //{
+            //    Console.WriteLine(token + inputQueue.ToString());
+            //}
+            //inputQueue.clear();
         }
 
         private void Dir()
@@ -96,7 +172,7 @@ namespace CosmosKernel1
             if (inputQueue.getSize() == 1)
             {
                 String directory = inputQueue.poll();
-                Console.WriteLine(directory);
+                //Console.WriteLine(directory);
                 Kernel.fs.ChangeDirectory(directory);
             }
         }
