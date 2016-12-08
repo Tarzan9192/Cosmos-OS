@@ -41,6 +41,9 @@ namespace CosmosKernel1
                 case "run":
                     Run();
                     break;
+                case "runall":
+                    Runall();
+                    break;
                 case "set":
                     Set();
                     break;
@@ -200,6 +203,45 @@ namespace CosmosKernel1
             }
         }
 
+        private void Runall()
+        {
+            if(inputQueue.getSize() >= 2)
+            {
+                int times = 0;               
+                try
+                {
+                    //Get number of times to run files
+                    times = Int32.Parse(inputQueue.poll());
+                    String temp = inputQueue.ToString().Trim();                   
+                    Queue batFiles = new Queue(temp);
+
+                    while (batFiles.getSize() > 0)
+                    {                                                
+                        String file = batFiles.poll();                        
+                        File f = Kernel.fs.GetCurrentDir().GetFile(file.Trim());                                                
+                        if(f != null && f.ext == "bat")
+                        {
+                            for (int i = 0; i < times; i++)
+                            {
+                                for (int j = 0; j < f.contents.Length; j++)
+                                {
+                                    ParseInput(f.contents[j]);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Hit else block.");
+                            throw new Exception();
+                        }
+                    }
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine("Incorrect parameters.");
+                }
+            }
+        }
         private void Run()
         {            
             if (inputQueue.getSize() == 2)
